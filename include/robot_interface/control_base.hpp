@@ -21,10 +21,10 @@ class ArmControlBase: public rclcpp::Node
 {
 public:
 
-  ArmControlBase(const std::string node_name)
-  : Node(node_name)
+  ArmControlBase(const std::string node_name, const rclcpp::NodeOptions & options)
+  : Node(node_name, options)
   {
-    joint_state_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states");
+    joint_state_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", 1);
   }
 
   ~ArmControlBase()
