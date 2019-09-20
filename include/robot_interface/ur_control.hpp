@@ -27,19 +27,6 @@
 #include "ur_modern_driver/ur/rt_state.h"
 #include "ur_modern_driver/ur/state.h"
 
-static const std::string IP_ADDR_ARG("~robot_ip_address");
-static const std::string REVERSE_IP_ADDR_ARG("~reverse_ip_address");
-static const std::string REVERSE_PORT_ARG("~reverse_port");
-static const std::string ROS_CONTROL_ARG("~use_ros_control");
-static const std::string LOW_BANDWIDTH_TRAJECTORY_FOLLOWER("~use_lowbandwidth_trajectory_follower");
-static const std::string MAX_VEL_CHANGE_ARG("~max_vel_change");
-static const std::string PREFIX_ARG("~prefix");
-static const std::string BASE_FRAME_ARG("~base_frame");
-static const std::string TOOL_FRAME_ARG("~tool_frame");
-static const std::string TCP_LINK_ARG("~tcp_link");
-static const std::string JOINT_NAMES_PARAM("hardware_interface/joints");
-static const std::string SHUTDOWN_ON_DISCONNECT_ARG("~shutdown_on_disconnect");
-
 static const std::vector<std::string> DEFAULT_JOINTS = { "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
                                                          "wrist_1_joint",      "wrist_2_joint",       "wrist_3_joint" };
 
@@ -67,6 +54,34 @@ public:
 
 std::string getLocalIPAccessibleFromHost(std::string &host);
 
+class IgnorePipelineStoppedNotifier : public INotifier
+{
+public:
+  void started(std::string name)
+  {
+    LOG_INFO("Starting pipeline %s", name.c_str());
+  }
+  void stopped(std::string name)
+  {
+    LOG_INFO("Stopping pipeline %s", name.c_str());
+  }
+};
+
+class ShutdownOnPipelineStoppedNotifier : public INotifier
+{
+public:
+  void started(std::string name)
+  {
+    LOG_INFO("Starting pipeline %s", name.c_str());
+  }
+  void stopped(std::string name)
+  {
+    LOG_INFO("Shutting down on stopped pipeline %s", name.c_str());
+    rclcpp::shutdown();
+    exit(1);
+  }
+};
+
 class URControl: public ArmControlBase
 {
 public:
@@ -77,6 +92,7 @@ public:
 
   ~URControl()
   {
+    rt_pl_->stop();
   }
 
   virtual bool moveToTcpPose(double x, double y, double z, 
@@ -95,9 +111,31 @@ public:
                      double alpha, double beta, double gamma,
                      double vel, double acc, double vel_scale, double retract);
 
+  bool urscriptInterface(const std::string command_script);
+
   bool start();
 
 private:
 
-  
+  ProgArgs args_;
+  std::string local_ip_;
+  std::unique_ptr<URFactory> factory_;
+
+  std::unique_ptr<URParser<RTPacket>> rt_parser_;
+  std::unique_ptr<URStream> rt_stream_;
+  std::unique_ptr<URProducer<RTPacket>> rt_prod_;
+  std::unique_ptr<URCommander> rt_commander_;
+  vector<IConsumer<RTPacket> *> rt_vec_;
+  std::unique_ptr<MultiConsumer<RTPacket>> rt_cons_;
+  std::unique_ptr<Pipeline<RTPacket>> rt_pl_;
+
+  INotifier *notifier_;
+
+  std::unique_ptr<URParser<StatePacket>> state_parser_;
+  std::unique_ptr<URStream> state_stream_;
+  std::unique_ptr<URProducer<StatePacket>> state_prod_;
+  vector<IConsumer<StatePacket> *> state_vec_;
+  std::unique_ptr<MultiConsumer<StatePacket>> state_cons_;
+  std::unique_ptr<Pipeline<StatePacket>> state_pl_;
+
 };

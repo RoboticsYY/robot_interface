@@ -18,7 +18,15 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  auto node = rclcpp::Node::make_shared("ur_control_test");
+  rclcpp::Rate rate(2);
+
+  auto node = std::make_shared<URControl>("ur_test", rclcpp::NodeOptions());
+
+  node->start();
+
+  rate.sleep();
+
+  node->moveToTcpPose(-0.350, -0.296, 0.145, 3.14159, 0, 0, 0.3, 0.3);
 
   rclcpp::spin(node);
 

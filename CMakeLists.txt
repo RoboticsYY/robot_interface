@@ -51,6 +51,14 @@ add_executable(ur_test ${TEST_SOURCE})
 ament_target_dependencies(ur_test rclcpp sensor_msgs)
 target_link_libraries(ur_test ${ur_modern_driver_LIBRARIES})
 
+install(TARGETS ur_test
+  DESTINATION lib/${PROJECT_NAME})
+
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
