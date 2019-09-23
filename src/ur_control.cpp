@@ -21,8 +21,8 @@ std::string getLocalIPAccessibleFromHost(std::string &host)
 }
 
 bool URControl::moveToTcpPose(double x, double y, double z, 
-                          double alpha, double beta, double gamma, 
-                          double vel, double acc)
+                              double alpha, double beta, double gamma, 
+                              double vel, double acc)
 {
   std::string command_script = "movej(p[" + 
                                std::to_string(x) + "," + std::to_string(y) + "," + std::to_string(z) + "," +
@@ -42,19 +42,19 @@ bool URControl::close(const double distance)
   return true;
 }
 
-bool URControl::pick(double x, double y, double z, 
-                double alpha, double beta, double gamma, 
-                double vel, double acc, double vel_scale, double approach)
-{
-  return true;
-}
+// bool URControl::pick(double x, double y, double z, 
+//                 double alpha, double beta, double gamma, 
+//                 double vel, double acc, double vel_scale, double approach)
+// {
+//   return true;
+// }
 
-bool URControl::place(double x, double y, double z, 
-                  double alpha, double beta, double gamma,
-                  double vel, double acc, double vel_scale, double retract)
-{
-  return true;
-}
+// bool URControl::place(double x, double y, double z, 
+//                   double alpha, double beta, double gamma,
+//                   double vel, double acc, double vel_scale, double retract)
+// {
+//   return true;
+// }
 
 bool URControl::urscriptInterface(const std::string command_script)
 {

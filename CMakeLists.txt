@@ -31,25 +31,39 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_eigen REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
-find_library(ur_modern_driver_LIBRARIES 
-             NAMES ur_driver_lib
-             HINTS /usr/local/lib/ur_modern_driver)
+find_library(
+  ur_modern_driver_LIBRARIES 
+  NAMES ur_driver_lib
+  HINTS /usr/local/lib/ur_modern_driver)
 find_path(ur_modern_driver_INCLUDE_DIRS ur_modern_driver/tcp_socket.h)
 # find_package(ur_modern_driver)
 
-include_directories(include
-                   ${ur_modern_driver_INCLUDE_DIRS})
+include_directories(
+  include
+  ${rclcpp_INCLUDE_DIRS}
+  ${tf2_INCLUDE_DIRS}
+  ${Eigen3_INCLUDE_DIRS}
+  ${ur_modern_driver_INCLUDE_DIRS})
 
-set(TEST_SOURCE src/ur_control.cpp
-                src/ur_test.cpp)
+set(${PROJECT_NAME}_LIB_SOURCES
+  src/control_base.cpp
+) 
+add_library(${PROJECT_NAME}_lib ${${PROJECT_NAME}_LIB_SOURCES})
+
+set(TEST_SOURCE 
+  src/ur_control.cpp
+  src/ur_test.cpp)
 
 add_executable(ur_test ${TEST_SOURCE})
 ament_target_dependencies(ur_test rclcpp sensor_msgs)
-target_link_libraries(ur_test ${ur_modern_driver_LIBRARIES})
+target_link_libraries(ur_test ${PROJECT_NAME}_lib ${ur_modern_driver_LIBRARIES})
 
 install(TARGETS ur_test
   DESTINATION lib/${PROJECT_NAME})

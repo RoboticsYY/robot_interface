@@ -14,7 +14,9 @@
 
 #pragma once
 
+#include <Eigen/Geometry>
 #include <rclcpp/rclcpp.hpp>
+#include <tf2_eigen/tf2_eigen.h>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
@@ -32,7 +34,7 @@ public:
   ArmControlBase(const std::string node_name, const rclcpp::NodeOptions & options)
   : Node(node_name, options)
   {
-    joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", rmw_qos_profile_default);
+    joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", 1);
   }
 
   ~ArmControlBase()
@@ -43,21 +45,23 @@ public:
                              double alpha, double beta, double gamma, 
                              double vel, double acc) = 0;
 
-  virtual bool moveToTcpPose(const geometry_msgs::msg::PoseStamped& pose_stamped);
+  virtual bool moveToTcpPose(const Eigen::Isometry3d& pose, double vel, double acc);
 
-  virtual bool open(const double distance) = 0;
+  virtual bool open(const double distance = 0) = 0;
 
-  virtual bool close(const double distance) = 0;
+  virtual bool close(const double distance = 0) = 0;
 
   virtual bool pick(double x, double y, double z, 
                     double alpha, double beta, double gamma, 
-                    double vel, double acc, double vel_scale, double approach) = 0;
+                    double vel, double acc, double vel_scale, double approach);
   
   virtual bool place(double x, double y, double z, 
                      double alpha, double beta, double gamma,
-                     double vel, double acc, double vel_scale, double retract) = 0;
+                     double vel, double acc, double vel_scale, double retract);
 
-  void PoseStampedToTcpPose(const geometry_msgs::msg::PoseStamped& pose_stamped, const TcpPose& tcp_pose);
+  void toTcpPose(const geometry_msgs::msg::PoseStamped& pose_stamped, TcpPose& tcp_pose);
+
+  void toTcpPose(const Eigen::Isometry3d& pose, TcpPose& tcp_pose);
 
 protected:
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_pub_;

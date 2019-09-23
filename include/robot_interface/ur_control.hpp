@@ -107,17 +107,17 @@ public:
                              double alpha, double beta, double gamma, 
                              double vel, double acc);
 
-  virtual bool open(const double distance);
+  virtual bool open(const double distance = 0);
 
-  virtual bool close(const double distance);
+  virtual bool close(const double distance = 0);
 
-  virtual bool pick(double x, double y, double z, 
-                    double alpha, double beta, double gamma, 
-                    double vel, double acc, double vel_scale, double approach);
+  // virtual bool pick(double x, double y, double z, 
+  //                   double alpha, double beta, double gamma, 
+  //                   double vel, double acc, double vel_scale, double approach);
   
-  virtual bool place(double x, double y, double z, 
-                     double alpha, double beta, double gamma,
-                     double vel, double acc, double vel_scale, double retract);
+  // virtual bool place(double x, double y, double z, 
+  //                    double alpha, double beta, double gamma,
+  //                    double vel, double acc, double vel_scale, double retract);
 
   // Send URScript to ur robot controller
   bool urscriptInterface(const std::string command_script);
