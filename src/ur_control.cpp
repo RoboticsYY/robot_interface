@@ -74,7 +74,7 @@ bool URControl::start()
   args_.reverse_port =5001 ;
   args_.max_vel_change = 15.0;
   args_.max_velocity = 10.0;
-  args_.joint_names = DEFAULT_JOINTS;
+  args_.joint_names = JOINTS;
   args_.shutdown_on_disconnect = true;
 
   local_ip_ = args_.reverse_ip_address;
@@ -105,6 +105,7 @@ bool URControl::start()
   rt_stream_.reset(new URStream(args_.host, UR_RT_PORT));
   rt_prod_.reset(new URProducer<RTPacket>(*rt_stream_, *rt_parser_));
   rt_commander_ = factory_->getCommander(*rt_stream_);
+  rt_vec_.push_back(this);
   rt_cons_.reset(new MultiConsumer<RTPacket>(rt_vec_));
   rt_pl_.reset(new Pipeline<RTPacket>(*rt_prod_, *rt_cons_, "RTPacket", *notifier_));
 
@@ -123,3 +124,39 @@ bool URControl::start()
   return true;
 }
 
+bool URControl::consume(RTState_V1_6__7& state)
+{
+  return publish(state);
+}
+bool URControl::consume(RTState_V1_8& state)
+{
+  return publish(state);
+}
+bool URControl::consume(RTState_V3_0__1& state)
+{
+  return publish(state);
+}
+bool URControl::consume(RTState_V3_2__3& state)
+{
+  return publish(state);
+}
+
+bool URControl::publish(RTShared& packet)
+{
+  return publishJoints(packet, rclcpp::Node::now());
+}
+
+bool URControl::publishJoints(RTShared& packet, rclcpp::Time t)
+{
+  sensor_msgs::msg::JointState joint_msg;
+  joint_msg.header.stamp = t;
+
+  joint_msg.name.assign(joint_names_.begin(), joint_names_.end());
+  joint_msg.position.assign(packet.q_actual.begin(), packet.q_actual.end());
+  joint_msg.velocity.assign(packet.qd_actual.begin(), packet.qd_actual.end());
+  joint_msg.effort.assign(packet.i_actual.begin(), packet.i_actual.end());
+
+  joint_pub_->publish(joint_msg);
+
+  return true;
+}

@@ -16,6 +16,14 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
+
+struct TcpPose
+{
+public:
+  double x, y, z;
+  double alpha, beta, gamma;
+};
 
 class ArmControlBase: public rclcpp::Node
 {
@@ -24,7 +32,7 @@ public:
   ArmControlBase(const std::string node_name, const rclcpp::NodeOptions & options)
   : Node(node_name, options)
   {
-    joint_state_publisher_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", 1);
+    joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", rmw_qos_profile_default);
   }
 
   ~ArmControlBase()
@@ -34,6 +42,8 @@ public:
   virtual bool moveToTcpPose(double x, double y, double z, 
                              double alpha, double beta, double gamma, 
                              double vel, double acc) = 0;
+
+  virtual bool moveToTcpPose(const geometry_msgs::msg::PoseStamped& pose_stamped);
 
   virtual bool open(const double distance) = 0;
 
@@ -47,7 +57,9 @@ public:
                      double alpha, double beta, double gamma,
                      double vel, double acc, double vel_scale, double retract) = 0;
 
+  void PoseStampedToTcpPose(const geometry_msgs::msg::PoseStamped& pose_stamped, const TcpPose& tcp_pose);
+
 protected:
-  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_state_publisher_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_pub_;
   std::vector<std::string> joint_names_;
 };

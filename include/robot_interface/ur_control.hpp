@@ -27,8 +27,8 @@
 #include "ur_modern_driver/ur/rt_state.h"
 #include "ur_modern_driver/ur/state.h"
 
-static const std::vector<std::string> DEFAULT_JOINTS = { "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
-                                                         "wrist_1_joint",      "wrist_2_joint",       "wrist_3_joint" };
+static const std::vector<std::string> JOINTS = { "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
+                                                 "wrist_1_joint",      "wrist_2_joint",       "wrist_3_joint" };
 
 static const int UR_SECONDARY_PORT = 30002;
 static const int UR_RT_PORT = 30003;
@@ -82,19 +82,27 @@ public:
   }
 };
 
-class URControl: public ArmControlBase
+class URControl: public ArmControlBase, public URRTPacketConsumer
 {
 public:
   URControl(const std::string node_name, const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
   : ArmControlBase(node_name, options)
   {
+    for (auto const& joint : JOINTS)
+    {
+      joint_names_.push_back(joint);
+    }
   }
 
   ~URControl()
   {
     rt_pl_->stop();
+    state_pl_->stop();
+    factory_.reset(nullptr);
+    notifier_ = nullptr;
   }
 
+  // Overload ArmControlBase functions
   virtual bool moveToTcpPose(double x, double y, double z, 
                              double alpha, double beta, double gamma, 
                              double vel, double acc);
@@ -111,9 +119,31 @@ public:
                      double alpha, double beta, double gamma,
                      double vel, double acc, double vel_scale, double retract);
 
+  // Send URScript to ur robot controller
   bool urscriptInterface(const std::string command_script);
 
+  // Start socket communication loop
   bool start();
+
+  // Overload URRTPacketConsumer functions
+  virtual bool consume(RTState_V1_6__7& state);
+  virtual bool consume(RTState_V1_8& state);
+  virtual bool consume(RTState_V3_0__1& state);
+  virtual bool consume(RTState_V3_2__3& state);
+
+  virtual void setupConsumer()
+  {
+  }
+  virtual void teardownConsumer()
+  {
+  }
+  virtual void stopConsumer()
+  {
+  }
+
+  // Functions to publish joint states
+  bool publishJoints(RTShared& packet, rclcpp::Time t);
+  bool publish(RTShared& packet);
 
 private:
 
@@ -121,6 +151,7 @@ private:
   std::string local_ip_;
   std::unique_ptr<URFactory> factory_;
 
+  // Robot rt message
   std::unique_ptr<URParser<RTPacket>> rt_parser_;
   std::unique_ptr<URStream> rt_stream_;
   std::unique_ptr<URProducer<RTPacket>> rt_prod_;
@@ -131,6 +162,7 @@ private:
 
   INotifier *notifier_;
 
+  // Robot state message
   std::unique_ptr<URParser<StatePacket>> state_parser_;
   std::unique_ptr<URStream> state_stream_;
   std::unique_ptr<URProducer<StatePacket>> state_prod_;
