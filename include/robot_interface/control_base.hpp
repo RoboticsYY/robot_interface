@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <mutex>
 #include <Eigen/Geometry>
 #include <rclcpp/rclcpp.hpp>
 #include <tf2_eigen/tf2_eigen.h>
@@ -22,7 +23,6 @@
 
 struct TcpPose
 {
-public:
   double x, y, z;
   double alpha, beta, gamma;
 };
@@ -35,6 +35,7 @@ public:
   : Node(node_name, options)
   {
     joint_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("/joint_states", 1);
+    time_out_ = 15.0;
   }
 
   ~ArmControlBase()
@@ -63,7 +64,17 @@ public:
 
   void toTcpPose(const Eigen::Isometry3d& pose, TcpPose& tcp_pose);
 
+  virtual bool checkTcpGoalArrived(Eigen::Isometry3d& tcp_goal);
+
 protected:
+  // Joint state publisher
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_pub_;
+  // Joint names
   std::vector<std::string> joint_names_;
+  // Current tcp pose
+  TcpPose tcp_pose_;
+  // Mutex to guard the tcp_pose usage
+  std::mutex m_;
+  // Motion running duration timeout
+  double time_out_;
 };

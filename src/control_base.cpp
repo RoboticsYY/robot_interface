@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <robot_interface/control_base.hpp>
+#include <chrono>
 
 bool ArmControlBase::moveToTcpPose(const Eigen::Isometry3d& pose, double vel, double acc)
 {
@@ -54,18 +55,18 @@ bool ArmControlBase::pick(double x, double y, double z,
   Eigen::Isometry3d pre_grasp;
   pre_grasp = grasp * Eigen::Translation3d(0, 0, -approach);
 
-  rclcpp::Rate rate(0.2);
+  // rclcpp::Rate rate(2.0);
 
   // Move to pre_grasp
-  if (moveToTcpPose(pre_grasp, vel, acc) && rate.sleep() &&
+  if (moveToTcpPose(pre_grasp, vel, acc) && checkTcpGoalArrived(pre_grasp) &&
       // Open gripper
       open() &&
       // Move to grasp
-      moveToTcpPose(grasp, vel*vel_scale, acc*vel_scale) && rate.sleep() &&
+      moveToTcpPose(grasp, vel*vel_scale, acc*vel_scale) && checkTcpGoalArrived(grasp) &&
       // Close gripper
       close() &&
       // Move to pre_grasp
-      moveToTcpPose(pre_grasp, vel*vel_scale, acc*vel_scale))
+      moveToTcpPose(pre_grasp, vel*vel_scale, acc*vel_scale) && checkTcpGoalArrived(pre_grasp))
   {
     std::cout << "Pick finished." << std::endl;
     return true;
@@ -78,8 +79,8 @@ bool ArmControlBase::pick(double x, double y, double z,
 }
 
 bool ArmControlBase::place(double x, double y, double z, 
-           double alpha, double beta, double gamma,
-           double vel, double acc, double vel_scale, double retract)
+                           double alpha, double beta, double gamma,
+                           double vel, double acc, double vel_scale, double retract)
 {
   Eigen::Isometry3d place;
   place = Eigen::AngleAxisd(alpha, Eigen::Vector3d::UnitX())
@@ -90,16 +91,16 @@ bool ArmControlBase::place(double x, double y, double z,
   Eigen::Isometry3d pre_place;
   pre_place = place * Eigen::Translation3d(0, 0, -retract);
 
-  rclcpp::Rate rate(0.2);
+  rclcpp::Rate rate(2.0);
  
   // Move to pre_place
-  if (moveToTcpPose(pre_place, vel, acc) && rate.sleep() &&
+  if (moveToTcpPose(pre_place, vel, acc) && checkTcpGoalArrived(pre_place) &&
       // Move to place
-      moveToTcpPose(place, vel*vel_scale, acc*vel_scale) && rate.sleep() &&
+      moveToTcpPose(place, vel*vel_scale, acc*vel_scale) && checkTcpGoalArrived(place) &&
       // Open gripper
       open() &&
       // Move to pre_grasp
-      moveToTcpPose(pre_place, vel*vel_scale, acc*vel_scale))
+      moveToTcpPose(pre_place, vel*vel_scale, acc*vel_scale) && checkTcpGoalArrived(pre_place))
   {
     std::cout << "Place finished." << std::endl;
     return true;
@@ -109,4 +110,39 @@ bool ArmControlBase::place(double x, double y, double z,
     std::cerr << "Place failed." << std::endl;
     return false;
   }
+}
+
+bool ArmControlBase::checkTcpGoalArrived(Eigen::Isometry3d& tcp_goal)
+{
+  bool wait = true;
+  bool arrived = false;
+
+  std::vector<std::vector<double>> record;
+
+  auto start = std::chrono::high_resolution_clock::now();
+  while(wait)
+  {
+    std::unique_lock<std::mutex> lock(m_);
+    Eigen::Vector3d t(tcp_pose_.x, tcp_pose_.y, tcp_pose_.z);
+    if (tcp_goal.translation().isApprox(t, 0.01))
+    {
+      wait = false;
+      arrived = true;
+    }
+    else
+    {
+      auto finish = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> elapsed = finish - start;
+      if (elapsed.count() > time_out_)
+      {
+        wait = false;
+        arrived = false;
+        std::cerr << "Motion timeout" << std::endl;
+        printf("Tcp pose: (%f %f %f %f %f %f). \n", tcp_pose_.x, tcp_pose_.y, tcp_pose_.z, 
+                                        tcp_pose_.alpha, tcp_pose_.beta, tcp_pose_.gamma);
+      }
+    }
+  }
+  rclcpp::sleep_for(std::chrono::milliseconds(500));
+  return arrived;
 }

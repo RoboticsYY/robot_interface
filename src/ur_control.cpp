@@ -42,20 +42,6 @@ bool URControl::close(const double distance)
   return true;
 }
 
-// bool URControl::pick(double x, double y, double z, 
-//                 double alpha, double beta, double gamma, 
-//                 double vel, double acc, double vel_scale, double approach)
-// {
-//   return true;
-// }
-
-// bool URControl::place(double x, double y, double z, 
-//                   double alpha, double beta, double gamma,
-//                   double vel, double acc, double vel_scale, double retract)
-// {
-//   return true;
-// }
-
 bool URControl::urscriptInterface(const std::string command_script)
 {
   bool res = rt_commander_->uploadProg(command_script);
@@ -124,21 +110,35 @@ bool URControl::start()
   return true;
 }
 
+bool URControl::getTcpPose(RTShared& packet)
+{
+  auto tv = packet.tool_vector_actual;
+  
+  tcp_pose_.x = tv.position.x;
+  tcp_pose_.y = tv.position.y;
+  tcp_pose_.z = tv.position.z;
+  tcp_pose_.alpha = tv.rotation.x;
+  tcp_pose_.beta = tv.rotation.y;
+  tcp_pose_.gamma = tv.rotation.z;
+
+  return true;
+}
+
 bool URControl::consume(RTState_V1_6__7& state)
 {
-  return publish(state);
+  return publish(state) && getTcpPose(state);
 }
 bool URControl::consume(RTState_V1_8& state)
 {
-  return publish(state);
+  return publish(state) && getTcpPose(state);
 }
 bool URControl::consume(RTState_V3_0__1& state)
 {
-  return publish(state);
+  return publish(state) && getTcpPose(state);
 }
 bool URControl::consume(RTState_V3_2__3& state)
 {
-  return publish(state);
+  return publish(state) && getTcpPose(state);
 }
 
 bool URControl::publish(RTShared& packet)

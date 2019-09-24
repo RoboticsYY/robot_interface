@@ -18,21 +18,20 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  rclcpp::Rate rate(2);
-
   auto node = std::make_shared<URControl>("ur_test", rclcpp::NodeOptions());
 
   node->start();
 
-  rate.sleep();
+  rclcpp::sleep_for(std::chrono::seconds(2));
 
   // node->moveToTcpPose(-0.350, -0.296, 0.12, 3.14159, 0, 0, 0.3, 0.3);
 
-  node->pick(-0.350, -0.296, 0.145, 3.14159, 0, 0, 0.3, 0.3, 0.5, 0.1);
+  while(rclcpp::ok())
+  {
+    node->pick(-0.153, -0.433, 0.145, 3.14159, 0, 0, 1.05, 1.4, 0.5, 0.1);
 
-  node->place(-0.350, -0.296, 0.145, 3.14159, 0, 0, 0.3, 0.3, 0.5, 0.1);
-
-  rclcpp::spin(node);
-
+    node->place(-0.350, -0.296, 0.145, 3.14159, 0, 0, 1.05, 1.4, 0.5, 0.1);
+  }
+  rclcpp::shutdown();
   return 0;
 }

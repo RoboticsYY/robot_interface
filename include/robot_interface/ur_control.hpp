@@ -111,14 +111,6 @@ public:
 
   virtual bool close(const double distance = 0);
 
-  // virtual bool pick(double x, double y, double z, 
-  //                   double alpha, double beta, double gamma, 
-  //                   double vel, double acc, double vel_scale, double approach);
-  
-  // virtual bool place(double x, double y, double z, 
-  //                    double alpha, double beta, double gamma,
-  //                    double vel, double acc, double vel_scale, double retract);
-
   // Send URScript to ur robot controller
   bool urscriptInterface(const std::string command_script);
 
@@ -144,6 +136,9 @@ public:
   // Functions to publish joint states
   bool publishJoints(RTShared& packet, rclcpp::Time t);
   bool publish(RTShared& packet);
+
+  // Function to get tool pose
+  bool getTcpPose(RTShared& packet);
 
 private:
 

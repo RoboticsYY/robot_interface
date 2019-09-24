@@ -36,6 +36,7 @@ find_package(tf2_eigen REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 find_library(
@@ -57,15 +58,21 @@ set(${PROJECT_NAME}_LIB_SOURCES
 ) 
 add_library(${PROJECT_NAME}_lib ${${PROJECT_NAME}_LIB_SOURCES})
 
-set(TEST_SOURCE 
+set(UR_LIB_SOURCES
   src/ur_control.cpp
-  src/ur_test.cpp)
+)
+add_library(ur_lib ${UR_LIB_SOURCES})
+ament_target_dependencies(ur_lib rclcpp sensor_msgs geometry_msgs)
+target_link_libraries(ur_lib ${PROJECT_NAME}_lib ${ur_modern_driver_LIBRARIES})
+
+set(TEST_SOURCE
+  test/ur_test.cpp)
 
 add_executable(ur_test ${TEST_SOURCE})
 ament_target_dependencies(ur_test rclcpp sensor_msgs)
-target_link_libraries(ur_test ${PROJECT_NAME}_lib ${ur_modern_driver_LIBRARIES})
+target_link_libraries(ur_test ur_lib ${PROJECT_NAME}_lib ${ur_modern_driver_LIBRARIES})
 
-install(TARGETS ur_test
+install(TARGETS ur_lib ur_test
   DESTINATION lib/${PROJECT_NAME})
 
 install(
