@@ -34,11 +34,30 @@ bool URControl::moveToTcpPose(double x, double y, double z,
 
 bool URControl::open(const double distance)
 {
+  rt_commander_->setToolVoltage(static_cast<uint8_t>(24));
+  if (!gripper_powered_up_)
+  {
+    rt_commander_->setToolVoltage(static_cast<uint8_t>(24));
+    gripper_powered_up_ = true;
+  }
+
+  rt_commander_->setDigitalOut(16, true);
+  rt_commander_->setDigitalOut(17, false);
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   return true;
 }
 
 bool URControl::close(const double distance)
 {
+  if (!gripper_powered_up_)
+  {
+    rt_commander_->setToolVoltage(static_cast<uint8_t>(24));
+    gripper_powered_up_ = true;
+  }
+
+  rt_commander_->setDigitalOut(16, false);
+  rt_commander_->setDigitalOut(17, true);
+  std::this_thread::sleep_for(std::chrono::seconds(1));
   return true;
 }
 
@@ -57,7 +76,7 @@ bool URControl::start()
 {
   args_.host = "192.168.0.5";
   args_.reverse_ip_address = "";
-  args_.reverse_port =5001 ;
+  args_.reverse_port = 5001 ;
   args_.max_vel_change = 15.0;
   args_.max_velocity = 10.0;
   args_.joint_names = JOINTS;

@@ -86,7 +86,7 @@ class URControl: public ArmControlBase, public URRTPacketConsumer
 {
 public:
   URControl(const std::string node_name, const rclcpp::NodeOptions & options = rclcpp::NodeOptions())
-  : ArmControlBase(node_name, options)
+  : ArmControlBase(node_name, options), gripper_powered_up_(false)
   {
     for (auto const& joint : JOINTS)
     {
@@ -165,4 +165,5 @@ private:
   std::unique_ptr<MultiConsumer<StatePacket>> state_cons_;
   std::unique_ptr<Pipeline<StatePacket>> state_pl_;
 
+  bool gripper_powered_up_;
 };

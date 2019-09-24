@@ -14,6 +14,7 @@
 
 #include <robot_interface/control_base.hpp>
 #include <chrono>
+#include <thread>
 
 bool ArmControlBase::moveToTcpPose(const Eigen::Isometry3d& pose, double vel, double acc)
 {
@@ -55,8 +56,6 @@ bool ArmControlBase::pick(double x, double y, double z,
   Eigen::Isometry3d pre_grasp;
   pre_grasp = grasp * Eigen::Translation3d(0, 0, -approach);
 
-  // rclcpp::Rate rate(2.0);
-
   // Move to pre_grasp
   if (moveToTcpPose(pre_grasp, vel, acc) && checkTcpGoalArrived(pre_grasp) &&
       // Open gripper
@@ -91,8 +90,6 @@ bool ArmControlBase::place(double x, double y, double z,
   Eigen::Isometry3d pre_place;
   pre_place = place * Eigen::Translation3d(0, 0, -retract);
 
-  rclcpp::Rate rate(2.0);
- 
   // Move to pre_place
   if (moveToTcpPose(pre_place, vel, acc) && checkTcpGoalArrived(pre_place) &&
       // Move to place
@@ -143,6 +140,6 @@ bool ArmControlBase::checkTcpGoalArrived(Eigen::Isometry3d& tcp_goal)
       }
     }
   }
-  rclcpp::sleep_for(std::chrono::milliseconds(500));
+  std::this_thread::sleep_for(std::chrono::milliseconds(500));
   return arrived;
 }
