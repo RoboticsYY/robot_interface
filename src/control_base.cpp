@@ -56,8 +56,9 @@ bool ArmControlBase::pick(double x, double y, double z,
   Eigen::Isometry3d pre_grasp;
   pre_grasp = grasp * Eigen::Translation3d(0, 0, -approach);
 
-  // Move to pre_grasp
-  if (moveToTcpPose(pre_grasp, vel, acc) && checkTcpGoalArrived(pre_grasp) &&
+  
+  if (// Move to pre_grasp
+      moveToTcpPose(pre_grasp, vel, acc) && checkTcpGoalArrived(pre_grasp) &&
       // Open gripper
       open() &&
       // Move to grasp
@@ -77,6 +78,15 @@ bool ArmControlBase::pick(double x, double y, double z,
   }
 }
 
+bool ArmControlBase::pick(const geometry_msgs::msg::PoseStamped& pose_stamped, 
+          double vel, double acc, double vel_scale, double approach)
+{
+  TcpPose tcp_pose;
+  toTcpPose(pose_stamped, tcp_pose);
+  return pick(tcp_pose.x, tcp_pose.y, tcp_pose.z, 
+              tcp_pose.alpha, tcp_pose.beta, tcp_pose.gamma, vel, acc, vel_scale, approach);
+}
+
 bool ArmControlBase::place(double x, double y, double z, 
                            double alpha, double beta, double gamma,
                            double vel, double acc, double vel_scale, double retract)
@@ -90,8 +100,9 @@ bool ArmControlBase::place(double x, double y, double z,
   Eigen::Isometry3d pre_place;
   pre_place = place * Eigen::Translation3d(0, 0, -retract);
 
-  // Move to pre_place
-  if (moveToTcpPose(pre_place, vel, acc) && checkTcpGoalArrived(pre_place) &&
+  
+  if (// Move to pre_place
+      moveToTcpPose(pre_place, vel, acc) && checkTcpGoalArrived(pre_place) &&
       // Move to place
       moveToTcpPose(place, vel*vel_scale, acc*vel_scale) && checkTcpGoalArrived(place) &&
       // Open gripper
@@ -107,6 +118,15 @@ bool ArmControlBase::place(double x, double y, double z,
     std::cerr << "Place failed." << std::endl;
     return false;
   }
+}
+
+bool ArmControlBase::place(const geometry_msgs::msg::PoseStamped& pose_stamped, 
+          double vel, double acc, double vel_scale, double retract)
+{
+  TcpPose tcp_pose;
+  toTcpPose(pose_stamped, tcp_pose);
+  return place(tcp_pose.x, tcp_pose.y, tcp_pose.z, 
+               tcp_pose.alpha, tcp_pose.beta, tcp_pose.gamma, vel, acc, vel_scale, retract);
 }
 
 bool ArmControlBase::checkTcpGoalArrived(Eigen::Isometry3d& tcp_goal)

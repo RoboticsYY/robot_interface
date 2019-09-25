@@ -24,7 +24,7 @@ int main(int argc, char * argv[])
 
   rclcpp::sleep_for(std::chrono::seconds(2));
 
-  // node->moveToTcpPose(-0.350, -0.296, 0.12, 3.14159, 0, 0, 0.3, 0.3);
+  node->moveToTcpPose(-0.350, -0.296, 0.12, 3.14159, 0, 0, 0.3, 0.3);
 
   while(rclcpp::ok())
   {

@@ -39,6 +39,7 @@ bool URControl::open(const double distance)
   {
     rt_commander_->setToolVoltage(static_cast<uint8_t>(24));
     gripper_powered_up_ = true;
+    std::cout << "Gripper powered up." << std::endl;    
   }
 
   rt_commander_->setDigitalOut(16, true);
@@ -53,6 +54,7 @@ bool URControl::close(const double distance)
   {
     rt_commander_->setToolVoltage(static_cast<uint8_t>(24));
     gripper_powered_up_ = true;
+    std::cout << "Gripper powered up." << std::endl;
   }
 
   rt_commander_->setDigitalOut(16, false);

@@ -56,8 +56,14 @@ public:
                     double alpha, double beta, double gamma, 
                     double vel, double acc, double vel_scale, double approach);
   
+  virtual bool pick(const geometry_msgs::msg::PoseStamped& pose_stamped, 
+                    double vel, double acc, double vel_scale, double approach);
+
   virtual bool place(double x, double y, double z, 
                      double alpha, double beta, double gamma,
+                     double vel, double acc, double vel_scale, double retract);
+
+  virtual bool place(const geometry_msgs::msg::PoseStamped& pose_stamped,
                      double vel, double acc, double vel_scale, double retract);
 
   void toTcpPose(const geometry_msgs::msg::PoseStamped& pose_stamped, TcpPose& tcp_pose);
