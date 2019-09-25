@@ -37,15 +37,13 @@ find_package(Eigen3 REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
 find_library(
   ur_modern_driver_LIBRARIES 
   NAMES ur_driver_lib
   HINTS /usr/local/lib/ur_modern_driver)
 find_path(ur_modern_driver_INCLUDE_DIRS ur_modern_driver/tcp_socket.h)
-# find_package(ur_modern_driver)
 
+# Set include directory path
 include_directories(
   include
   ${rclcpp_INCLUDE_DIRS}
@@ -53,11 +51,13 @@ include_directories(
   ${Eigen3_INCLUDE_DIRS}
   ${ur_modern_driver_INCLUDE_DIRS})
 
+# Add robot interface library
 set(${PROJECT_NAME}_LIB_SOURCES
   src/control_base.cpp
 ) 
 add_library(${PROJECT_NAME}_lib ${${PROJECT_NAME}_LIB_SOURCES})
 
+# Add UR robot interface library
 set(UR_LIB_SOURCES
   src/ur_control.cpp
 )
@@ -65,6 +65,7 @@ add_library(ur_lib ${UR_LIB_SOURCES})
 ament_target_dependencies(ur_lib rclcpp sensor_msgs geometry_msgs)
 target_link_libraries(ur_lib ${PROJECT_NAME}_lib ${ur_modern_driver_LIBRARIES})
 
+# Add test of UR robot interface library
 set(TEST_SOURCE
   test/ur_test.cpp)
 
@@ -72,12 +73,20 @@ add_executable(ur_test ${TEST_SOURCE})
 ament_target_dependencies(ur_test rclcpp sensor_msgs)
 target_link_libraries(ur_test ur_lib ${PROJECT_NAME}_lib ${ur_modern_driver_LIBRARIES})
 
+# Install library and executables
 install(TARGETS ur_lib ur_test
   DESTINATION lib/${PROJECT_NAME})
 
+# Install header files  
 install(
   DIRECTORY include/
   DESTINATION include
+)
+
+# Install launch files.
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}/
 )
 
 if(BUILD_TESTING)

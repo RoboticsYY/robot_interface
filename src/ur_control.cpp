@@ -70,10 +70,32 @@ bool URControl::urscriptInterface(const std::string command_script)
 
 bool URControl::start()
 {
-  args_.host = HOST;
-  args_.joint_names = JOINTS;
-  args_.shutdown_on_disconnect = true;
+  // Initialize parameter client
+  auto parameters_client = std::make_shared<rclcpp::SyncParametersClient>(this);
+  while (!parameters_client->wait_for_service(1s)) {
+    if (!rclcpp::ok()) {
+      RCLCPP_ERROR(this->get_logger(), "Interrupted while waiting for the service. Exiting.");
+      rclcpp::shutdown();
+    }
+    RCLCPP_INFO(this->get_logger(), "service not available, waiting again...");
+  }
 
+  // Get parameters
+  args_.host = parameters_client->get_parameter("host", HOST);
+  args_.joint_names = parameters_client->get_parameter("joint_names", JOINTS);
+  args_.shutdown_on_disconnect = parameters_client->get_parameter("shutdown_on_disconnect", SHUTDOWN_ON_DISCONNECT);
+
+  // Print parameters
+  RCLCPP_INFO(this->get_logger(), args_.host);
+  std::stringstream ss;
+  for (auto & name : args_.joint_names)
+  {
+    ss << name << " ";
+  }
+  RCLCPP_INFO(this->get_logger(), ss.str().c_str());
+  RCLCPP_INFO(this->get_logger(), std::to_string(args_.shutdown_on_disconnect));
+
+  // Initialize socket communication
   factory_.reset(new URFactory(args_.host));
 
   notifier_ = nullptr;

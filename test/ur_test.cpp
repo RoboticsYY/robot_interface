@@ -18,7 +18,9 @@ int main(int argc, char * argv[])
 {
   rclcpp::init(argc, argv);
 
-  auto node = std::make_shared<URControl>("ur_test", rclcpp::NodeOptions());
+  auto node = std::make_shared<URControl>("ur_test",  rclcpp::NodeOptions()
+                                                        .allow_undeclared_parameters(true)
+                                                        .automatically_declare_parameters_from_overrides(true));
 
   node->start();
 
@@ -28,7 +30,7 @@ int main(int argc, char * argv[])
 
   while(rclcpp::ok())
   {
-    node->pick(-0.153, -0.433, 0.145, 3.14159, 0, 0, 1.05, 1.4, 0.5, 0.1);
+    node->pick(-0.153, -0.433, 0.145, 2.8, -0.144, 0.0245, 1.05, 1.4, 0.5, 0.1);
 
     node->place(-0.350, -0.296, 0.145, 3.14159, 0, 0, 1.05, 1.4, 0.5, 0.1);
   }

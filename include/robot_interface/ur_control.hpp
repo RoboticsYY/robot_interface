@@ -29,9 +29,8 @@
 
 static const std::vector<std::string> JOINTS = { "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
                                                  "wrist_1_joint",      "wrist_2_joint",       "wrist_3_joint" };
-
 static const std::string HOST = "192.168.0.5";
-
+static const bool SHUTDOWN_ON_DISCONNECT = true;
 static const int UR_SECONDARY_PORT = 30002;
 static const int UR_RT_PORT = 30003;
 
