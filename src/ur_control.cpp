@@ -14,12 +14,6 @@
 
 #include <robot_interface/ur_control.hpp>
 
-std::string getLocalIPAccessibleFromHost(std::string &host)
-{
-  URStream stream(host, UR_RT_PORT);
-  return stream.connect() ? stream.getIP() : std::string();
-}
-
 bool URControl::moveToTcpPose(double x, double y, double z, 
                               double alpha, double beta, double gamma, 
                               double vel, double acc)
@@ -76,21 +70,9 @@ bool URControl::urscriptInterface(const std::string command_script)
 
 bool URControl::start()
 {
-  args_.host = "192.168.0.5";
-  args_.reverse_ip_address = "";
-  args_.reverse_port = 5001 ;
-  args_.max_vel_change = 15.0;
-  args_.max_velocity = 10.0;
+  args_.host = HOST;
   args_.joint_names = JOINTS;
   args_.shutdown_on_disconnect = true;
-
-  local_ip_ = args_.reverse_ip_address;
-
-  // if no reverse IP address has been configured, try to detect one
-  if (local_ip_.empty())
-  {
-    local_ip_ = getLocalIPAccessibleFromHost(args_.host);
-  }
 
   factory_.reset(new URFactory(args_.host));
 

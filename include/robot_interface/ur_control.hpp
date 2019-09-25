@@ -30,6 +30,8 @@
 static const std::vector<std::string> JOINTS = { "shoulder_pan_joint", "shoulder_lift_joint", "elbow_joint",
                                                  "wrist_1_joint",      "wrist_2_joint",       "wrist_3_joint" };
 
+static const std::string HOST = "192.168.0.5";
+
 static const int UR_SECONDARY_PORT = 30002;
 static const int UR_RT_PORT = 30003;
 
@@ -37,22 +39,9 @@ struct ProgArgs
 {
 public:
   std::string host;
-  std::string prefix;
-  std::string base_frame;
-  std::string tool_frame;
-  std::string tcp_link;
-  std::string reverse_ip_address;
-  int32_t reverse_port;
   std::vector<std::string> joint_names;
-  double max_acceleration;
-  double max_velocity;
-  double max_vel_change;
-  bool use_ros_control;
-  bool use_lowbandwidth_trajectory_follower;
   bool shutdown_on_disconnect;
 };
-
-std::string getLocalIPAccessibleFromHost(std::string &host);
 
 class IgnorePipelineStoppedNotifier : public INotifier
 {
@@ -100,6 +89,7 @@ public:
     state_pl_->stop();
     factory_.reset(nullptr);
     notifier_ = nullptr;
+    LOG_INFO("UR control interface shut down.");
   }
 
   // Overload ArmControlBase functions
