@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * @file ur_test.cpp 
+ */
+
 #include <robot_interface/ur_control.hpp>
 
 int main(int argc, char * argv[])

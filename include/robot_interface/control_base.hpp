@@ -12,6 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * @file control_base.hpp
+ * @author Yu Yan
+ * @date 29 Sep 2019
+ * @brief Native robot control interface for visual manipulation.
+ *
+ * This file contains the control interface template to make the visual grasping. The interface is used 
+ * for the control between a PC and an industrial robot controller. Collision detection is not considered in this
+ * interface. The specific interfaces are expected to be filled with the communication protocal of a specific 
+ * industrial robot, which are usually provided by the industrial robot manufacturors. 
+ */
+
 #pragma once
 
 #include <mutex>
@@ -21,16 +33,31 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 
+/**
+ * @brief Data type to represent robot arm's end-effector pose in 3D cartesian space.
+ */
 struct TcpPose
 {
-  double x, y, z;
-  double alpha, beta, gamma;
+  double x; /**< Translation along x axis. */
+  double y; /**< Translation along y axis. */
+  double z; /**< Translation along z axis. */
+  double alpha; /**< Euler angle of the rotation along x axis. */
+  double beta;  /**< Euler angle of the rotation along y axis. */
+  double gamma; /**< Euler angle of the rotation along z axis. */
 };
 
+/**
+ * @brief Robot arm control interface.
+ */
 class ArmControlBase: public rclcpp::Node
 {
 public:
 
+  /**
+   * @brief Constructor of class #ArmControlBase.
+   * @param node_name The name of the ROS2 node.
+   * @param options ROS2 node options.
+   */
   ArmControlBase(const std::string node_name, const rclcpp::NodeOptions & options)
   : Node(node_name, options)
   {
@@ -38,10 +65,22 @@ public:
     time_out_ = 15.0;
   }
 
+  /**
+   * @brief Default destructor of class #ArmControlBase.
+   */
   ~ArmControlBase()
   {
   }
 
+  /**
+   * @brief Move the robot end-effector to a goal position and orientation in 3D Cartesian space.
+   * @param x Goal position on X dimension.
+   * @param y Goal position on Y dimension.
+   * @param z Goal position on Z dimension.
+   * @param alpha Goal rotation euler angle along X axis.
+   * @param beta Goal rotation euler angle along Y axis.
+   * @param gamma Goal rotation euler angle along Z axis.
+   */
   virtual bool moveToTcpPose(double x, double y, double z, 
                              double alpha, double beta, double gamma, 
                              double vel, double acc) = 0;

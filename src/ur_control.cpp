@@ -12,6 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+/**
+ * @file ur_control.cpp 
+ */
+
 #include <robot_interface/ur_control.hpp>
 
 bool URControl::moveToTcpPose(double x, double y, double z, 
