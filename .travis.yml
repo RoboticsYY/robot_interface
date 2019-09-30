@@ -1,0 +1,31 @@
+sudo: required
+dist: xenial
+services:
+  - docker
+language: cpp
+compiler: gcc
+cache: ccache
+
+notifications:
+  email:
+    recipients:
+
+addons:
+  apt:
+    packages:
+      - doxygen
+
+script:
+  - doxygen ./Doxyfile
+
+after_success:
+  - touch build/html/.nojekyll
+
+deploy:
+  # Deploy to gh-pages branch
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  local_dir: ./build/html
+  on:
+    branch: master
