@@ -43,6 +43,11 @@ find_library(
   HINTS /usr/local/lib)
 find_path(ur_modern_driver_INCLUDE_DIRS ur_modern_driver/tcp_socket.h)
 
+# Eigen 3.2 (Wily) only provides EIGEN3_INCLUDE_DIR, not EIGEN3_INCLUDE_DIRS
+if(NOT EIGEN3_INCLUDE_DIRS)
+  set(EIGEN3_INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+endif()
+
 # Set include directory path
 include_directories(
   include
