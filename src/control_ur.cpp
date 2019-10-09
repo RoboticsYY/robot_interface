@@ -16,7 +16,7 @@
  * @file ur_control.cpp 
  */
 
-#include <robot_interface/ur_control.hpp>
+#include <robot_interface/control_ur.hpp>
 
 bool URControl::moveToTcpPose(double x, double y, double z, 
                               double alpha, double beta, double gamma, 
@@ -100,7 +100,7 @@ void URControl::parseArgs()
   RCLCPP_INFO(this->get_logger(), std::to_string(args_.shutdown_on_disconnect));
 }
 
-bool URControl::start()
+bool URControl::startLoop()
 {
   // Initialize socket communication
   factory_.reset(new URFactory(args_.host));

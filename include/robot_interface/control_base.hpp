@@ -71,7 +71,7 @@ public:
   /**
    * @brief Default destructor of class #ArmControlBase.
    */
-  ~ArmControlBase()
+  virtual ~ArmControlBase()
   {
   }
 
@@ -231,6 +231,16 @@ public:
    * @return If the end-effector arrived the goal pose within a <b>time_out_</b> duration, return true. Otherwise, return false.
    */
   virtual bool checkTcpGoalArrived(Eigen::Isometry3d& tcp_goal);
+
+  /** 
+   * @brief Parse arguments
+   */
+  virtual void parseArgs() = 0;
+
+  /**
+   * @brief Start control loop
+   */
+  virtual bool startLoop() = 0;
 
 protected:
   /// Joint state publisher

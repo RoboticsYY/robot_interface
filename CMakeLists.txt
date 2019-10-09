@@ -53,34 +53,45 @@ include_directories(
   include
   ${rclcpp_INCLUDE_DIRS}
   ${tf2_INCLUDE_DIRS}
-  ${ur_modern_driver_INCLUDE_DIRS})
-
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIRS})
+  ${ur_modern_driver_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS})
 
 # Add robot interface library
-set(${PROJECT_NAME}_LIB_SOURCES
+set(${PROJECT_NAME}_SOURCES
   src/control_base.cpp
+  src/control_ur.cpp
 ) 
-add_library(${PROJECT_NAME}_lib ${${PROJECT_NAME}_LIB_SOURCES})
-
-# Add UR robot interface library
-set(UR_LIB_SOURCES
-  src/ur_control.cpp
-)
-add_library(ur_lib ${UR_LIB_SOURCES})
-ament_target_dependencies(ur_lib rclcpp sensor_msgs geometry_msgs)
-target_link_libraries(ur_lib ${PROJECT_NAME}_lib ${ur_modern_driver_LIBRARIES})
+add_library(${PROJECT_NAME} ${${PROJECT_NAME}_SOURCES})
+ament_target_dependencies(${PROJECT_NAME} rclcpp sensor_msgs geometry_msgs)
+target_link_libraries(${PROJECT_NAME} ${ur_modern_driver_LIBRARIES})
 
 # Add test of UR robot interface library
 set(TEST_SOURCE
   test/ur_test.cpp)
 
 add_executable(ur_test ${TEST_SOURCE})
-ament_target_dependencies(ur_test rclcpp sensor_msgs)
-target_link_libraries(ur_test ur_lib ${PROJECT_NAME}_lib ${ur_modern_driver_LIBRARIES})
+ament_target_dependencies(ur_test rclcpp sensor_msgs geometry_msgs)
+target_link_libraries(ur_test ${PROJECT_NAME} ${ur_modern_driver_LIBRARIES})
 
-# Install library and executables
-install(TARGETS ur_lib ur_test
+ament_export_include_directories(include)
+ament_export_interfaces(${PROJECT_NAME} HAS_LIBRARY_TARGET)
+
+ament_export_dependencies(rclcpp)
+ament_export_dependencies(sensor_msgs)
+ament_export_dependencies(geometry_msgs)
+
+# Install library
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+# Install executables
+install(TARGETS ur_test
   DESTINATION lib/${PROJECT_NAME})
 
 # Install header files  
