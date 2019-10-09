@@ -25,6 +25,8 @@ Install **robot_interface**:
 
 The installation should refer to the installation of **ros2_grasp_library**.
 
+> Note: If error "fatal error: Eigen/Geometry: No such file or directory" persists during the compilation, please check the file path of "Eigen/Geometry", if it locates at "/usr/local/include/eigen3/Eigen/Geometry", a work around is creating a soft link to "/usr/local/include/Eigen/Geometry".
+
 ## Launch
 
 Launch the UR robot control test executable:
